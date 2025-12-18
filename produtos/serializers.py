@@ -9,6 +9,7 @@ class CategoriaSerializer(serializers.ModelSerializer):
 class ProdutoSerializer(serializers.ModelSerializer):
 
     categoria_nome = serializers.ReadOnlyField(source='categoria.nome')
+    is_favorito = serializers.SerializerMethodField()
     class Meta:
         model = Produto
         fields = '__all__' # Pega todos os campos (nome, marca, preco, imagem, ativo...)

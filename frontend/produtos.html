@@ -22,7 +22,13 @@
         <div class="filtros">
             <input type="text" id="busca" placeholder="Buscar por nome (ex: Calabresa)..." style="margin-bottom: 0;">
         </div>
-
+        <button onclick="carregarFavoritos()" class="btn-primary" style="width: auto; background-color: #e74c3c; padding: 10px 15px;">
+            ❤️ Meus Favoritos
+        </button>
+        
+        <button onclick="carregarProdutos()" class="btn-secondary" style="width: auto; margin: 0; padding: 10px 15px;">
+            Todos
+        </button>
         <div id="loading" style="text-align: center; color: white; display: none; font-size: 1.2em;">Carregando cardápio...</div>
         
         <div id="lista-produtos" class="grid-produtos">

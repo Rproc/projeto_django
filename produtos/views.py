@@ -1,8 +1,10 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from .models import Produto, Categoria
 from .serializers import ProdutoSerializer, CategoriaSerializer
 from rest_framework.decorators import action
+from rest_framework.response import Response
+
 # para alterar as permissoes, usar o permissions.py
 # from .permissions import IsAdminOrReadOnly
 

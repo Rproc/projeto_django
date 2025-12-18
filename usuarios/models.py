@@ -30,6 +30,9 @@ class Usuario(models.Model):
                     verbose_name='Criado em')
     atualizado = models.DateTimeField(auto_now=True,
                     verbose_name='Atualizado em')
+
+    # 15 pontos - reset de senha    
+    last_login = models.DateTimeField(verbose_name='Último Login', null=True, blank=True)
     
     # 20 pontos - favoritos
     favoritos = models.ManyToManyField('produtos.Produto',
@@ -37,6 +40,39 @@ class Usuario(models.Model):
                                         related_name='favoritados',
                                         verbose_name='Meus Favoritos')
     
+    @classmethod
+    def get_email_field_name(cls):
+        """
+        Método exigido pelo Django para saber qual campo usar como email
+        no envio de recuperação de senha.
+        """
+        return 'email'
+
+    @property
+    def is_active(self):
+        """
+        O Django busca por 'is_active', mas seu campo chama 'ativo'.
+        Isso cria um 'atalho' para o Django entender.
+        """
+        return self.ativo
+    
+    @property
+    def password(self):
+        return self.senha
+    @password.setter
+    def password(self, value):
+        """
+        Permite definir user.password = '...' e isso salvar em self.senha
+        """
+        self.senha = value
+
+    def set_password(self, raw_password):
+        """
+        Método auxiliar que o Django costuma chamar para definir senha com hash.
+        """
+        from django.contrib.auth.hashers import make_password
+        self.senha = make_password(raw_password)
+        
     class Meta:
         # nome da tabela
         db_table = 'usuarios'

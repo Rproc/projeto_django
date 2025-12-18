@@ -94,3 +94,38 @@ async function toggleFavorito(id) {
         alert("Erro ao favoritar.");
     }
 }
+
+
+/**
+ * Carrega APENAS os produtos favoritados pelo usuário
+ */
+async function carregarFavoritos() {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+        alert("Faça login para ver seus favoritos!");
+        return;
+    }
+
+    listaDiv.innerHTML = '';
+    loadingDiv.style.display = 'block';
+    
+    // Limpa o campo de busca visualmente para indicar que é uma lista especial
+    if(inputBusca) inputBusca.value = '';
+
+    // Chama a rota específica que criamos no backend (action 'meus_favoritos')
+    // O DRF converte o nome da função (meus_favoritos) para URL com hífen (meus-favoritos)
+    const result = await apiFetch('/produtos/meus-favoritos/', 'GET', null, token);
+    
+    loadingDiv.style.display = 'none';
+
+    if (result.ok) {
+        // Reaproveitamos a mesma função de renderizar!
+        renderizarProdutos(result.data);
+        
+        if ((result.data.results && result.data.results.length === 0) || result.data.length === 0) {
+            listaDiv.innerHTML = '<p style="color: white; text-align: center; width: 100%; font-size: 1.2em;">Você ainda não tem favoritos.</p>';
+        }
+    } else {
+        listaDiv.innerHTML = '<p style="color: white; text-align: center;">Erro ao carregar favoritos.</p>';
+    }
+}
