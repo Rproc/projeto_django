@@ -238,33 +238,28 @@ class UsuarioViewSet(viewsets.ModelViewSet):
             return Response({'erro': 'Erro interno na renovação'}, status=400)
         
     def partial_update(self, request, pk=None):
-        """
-        PATCH /usuarios/<pk>/ 
-        Só permite atualizar o próprio perfil
-        """
         usuario = self.get_object()
-        
-        # Verificar se é o próprio usuário
-        user_id_from_token = request.auth.payload.get('user_id')
-        if usuario.id != user_id_from_token:
+
+        # comparar com request.user, não com payload
+        if usuario.id != request.user.id:
             return Response(
                 {'erro': 'Você só pode atualizar seu próprio perfil'},
                 status=status.HTTP_403_FORBIDDEN
             )
-        
+
         serializer = CadastroSerializer(
             usuario,
             data=request.data,
             partial=True
         )
-        
+
         if serializer.is_valid():
             serializer.save()
             return Response({
                 'mensagem': 'Usuário atualizado com sucesso',
                 'usuario': UsuarioSerializer(usuario).data
             })
-        
+
         return Response(
             {'erro': serializer.errors},
             status=status.HTTP_400_BAD_REQUEST
