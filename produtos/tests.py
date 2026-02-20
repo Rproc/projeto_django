@@ -1,6 +1,10 @@
 from django.test import TestCase
 from produtos.models import Produto, Categoria
 from produtos.serializers import ProdutoSerializer
+from rest_framework.test import APITestCase
+from rest_framework import status
+# usar os nomes das rotas
+from rest_framework.reverse import reverse
 # Create your tests here.
 
 
@@ -104,3 +108,69 @@ class ProdutoTesteUnitario(TestCase):
         self.assertGreater(
             len(serializer.validated_data['descricao']), 20
             )
+        
+class ProdutoTesteFuncional(APITestCase):
+    
+    def setUp(self):
+        self.categoria = Categoria.objects.create(
+            nome='Eletronicos',
+            descricao='Categoria de Eletronicos'
+        )
+
+    def _payload_usuario(self):
+        return {
+            'nome': 'Usuario Teste',
+            'email': 'usuario@teste.com',
+            'cpf': '12345678901',
+            'senha': 'Senha@123',
+            'senha_confirmacao': 'Senha@123'
+        }
+
+    def _payload_produto(self):
+        return {
+            'categoria': self.categoria.id,
+            'nome': 'Mouse Gamer',
+            'marca': 'Logitech',
+            'preco': 150.00,
+            'descricao': 'Mouse gamer com alta precisão e RGB',
+            'ativo': True
+        }
+
+    def _autenticar_usuario(self):
+        # cria usuário
+        self.client.post(
+            reverse('usuarios-cadastro'),
+            self._payload_usuario(),
+            format='json'
+        )
+
+        # faz login
+        login = self.client.post(
+            reverse('usuarios-login'),
+            {
+                'email': self._payload_usuario()['email'],
+                'senha': self._payload_usuario()['senha']
+            },
+            format='json'
+        )
+
+        access = login.data['access']
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {access}'
+        )
+
+    def test_usuario_anonimo_nao_pode_criar_produto(self):
+        # Arrange
+        payload = self._payload_produto()
+
+        # Act
+        response = self.client.post(
+            reverse('produtos-list'),
+            payload,
+            format='json'
+        )
+
+        # Assert
+        self.assertIn(response.status_code,(status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN))
+
+        self.assertFalse(Produto.objects.filter(nome=payload['nome']).exists())
