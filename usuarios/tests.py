@@ -73,7 +73,7 @@ class UsuarioTestesUnitarios(TestCase):
 
 # TESTES FUNCIONAIS
 
-class UsuarioTestesFuncional(TestCase):
+class UsuarioTestesFuncional(APITestCase):
     def _payload_cadastro(self, **overrides):
         data = {
             'nome':'Coca-Cola Zero',
@@ -102,3 +102,46 @@ class UsuarioTestesFuncional(TestCase):
             Usuario.objects.filter(
                 email=response.data['usuario']['email']).exists()
         )
+        
+    def test_atualizar_usuario(self):
+        # Arrange
+        url_cadastro = reverse('usuarios-cadastro')
+        response_cadastro = self.client.post(
+            url_cadastro,
+            self._payload_cadastro(),
+            format='json'
+        )
+
+        # pega o id do usuario criado
+        usuario_id = response_cadastro.data['usuario']['id']
+
+        # realiza login
+        url_login = reverse('usuarios-login')
+        credenciais = {
+            'email': self._payload_cadastro()['email'],
+            'senha': self._payload_cadastro()['senha']
+        }
+
+        login = self.client.post(url_login, credenciais, format='json')
+        access = login.data['access']
+
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {access}')
+
+        # dados para atualização
+        update = {
+            'nome': 'Teste de Atualização'
+        }
+
+        url_update = reverse('usuarios-detail', args=[usuario_id])
+
+        # Act
+        response = self.client.patch(url_update, update, format='json')
+
+        # Assert
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertIn('mensagem', response.data)
+        self.assertEqual(response.data['mensagem'], 'Usuário atualizado com sucesso')
+
+        # valida no banco
+        self.assertTrue(Usuario.objects.filter(id=usuario_id,nome='Teste de Atualização').exists())
