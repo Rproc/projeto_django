@@ -66,7 +66,7 @@ class CadastroSerializer(serializers.ModelSerializer):
         cpf_limpo = re.sub(r'[^0-9]', '', value)
         if len(cpf_limpo) != 11:
             raise serializers.ValidationError("CPF inválido")
-        return value
+        return cpf_limpo
     
     # 5 pontos - Validar Senhas
     def validate_senha(self, value):
